@@ -440,9 +440,10 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 32px;
+  padding: 14px 24px;
   position: relative;
   z-index: 90;
+  gap: 16px;
 }
 .topbar-left {
   display: flex;
@@ -491,19 +492,21 @@ body {
 .topbar-right {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  flex-shrink: 0;
 }
 .next-badge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   background: var(--compliance-bg);
   border: 1px solid var(--compliance-border);
   color: var(--compliance-dark);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
-  padding: 6px 12px;
+  padding: 5px 10px;
   border-radius: var(--radius-full);
+  white-space: nowrap;
 }
 .next-badge svg { color: var(--compliance-green); }
 
