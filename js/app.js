@@ -28,28 +28,51 @@ const TRAINING_TOPICS = [
 ];
 
 const WORKERS = [
-  { name: "Rajesh Sharma",  dept: "Packing & Sealing" },
-  { name: "Sunita Devi",    dept: "Repacking & Filling" },
-  { name: "Manoj Kumar",    dept: "Storage & Dispatch" },
-  { name: "Kavita Patil",   dept: "Quality Checking" },
-  { name: "Ramesh Yadav",   dept: "Delivery & Loading" },
-  { name: "Geeta Joshi",    dept: "Packing & Sealing" },
-  { name: "Arjun Tiwari",   dept: "Repacking & Filling" },
-  { name: "Priya Nair",     dept: "Quality Checking" }
+  { name: "Rajesh Sharma",       dept: "Packing & Sealing" },
+  { name: "Mukesh Vora",         dept: "Storage & Dispatch" },
+  { name: "Vinod Singh",         dept: "Delivery & Loading" },
+  { name: "Vishal Chaturvedi",   dept: "Quality Checking" },
+  { name: "Golu Yadav",          dept: "Repacking & Filling" },
+  { name: "Mahesh",              dept: "Packing & Sealing" },
+  { name: "Rajkumar",            dept: "Storage & Dispatch" },
+  { name: "Pratap",              dept: "Delivery & Loading" },
+  { name: "Suraj",               dept: "Repacking & Filling" },
+  { name: "Suchitra",            dept: "Quality Checking" },
+  { name: "Anil",                dept: "Packing & Sealing" }
 ];
 
-const TRAINERS = ["Rajesh Sharma (QA Manager)", "Sunita Verma (Supervisor)", "Amit Patel (FSSAI Officer)"];
-const LANGUAGES = ["Hindi", "Marathi", "Both"];
-const METHODS   = ["Verbal", "Practical Demonstration", "Both"];
+const TRAINERS   = ["Bhavik Karani"];
+const LANGUAGES  = ["Hindi"];
+const METHODS    = ["Verbal"];
 const REMARKS_LIST = [
-  "All workers understood topics clearly.",
-  "Workers shown practical demo of handwashing station.",
-  "Special focus on FIFO arrangement in storage.",
-  "Workers tested with verbal Q&A — all passed.",
-  "Refresher session; new joiners included.",
-  "Topics covered with visual charts and posters.",
-  "Workers confirmed understanding with thumbprint."
+  "Sabhi workers ne topics clearly samjhe.",
+  "Workers ko haath dhone ka practical demo diya gaya.",
+  "FIFO arrangement par special focus kiya gaya.",
+  "Workers se verbal Q&A hua — sabhi pass hue.",
+  "Refresher session; naaye joiners shamil the.",
+  "Visual charts aur posters ke saath topics cover kiye.",
+  "Workers ne thumbprint se samajh confirm kiya."
 ];
+
+// ── UNIT 11 / UNIT 12 TOGGLE ──────────────────────────────────────────────────
+const UNIT_STORAGE_KEY = 'lv_training_active_unit';
+let activeUnit = localStorage.getItem(UNIT_STORAGE_KEY) || 'Unit 11';
+
+window.setActiveUnit = function(unit) {
+  activeUnit = unit;
+  localStorage.setItem(UNIT_STORAGE_KEY, unit);
+  document.getElementById('unit-btn-11')?.classList.toggle('active', unit === 'Unit 11');
+  document.getElementById('unit-btn-12')?.classList.toggle('active', unit === 'Unit 12');
+  const heroLbl = document.getElementById('hero-unit-lbl');
+  if (heroLbl) heroLbl.textContent = unit;
+  // Re-render sidebar list to show correct time badge
+  renderSidebar(allSessions);
+};
+
+function initUnitToggle() {
+  setActiveUnit(activeUnit);
+}
+
 
 // Generate all Wednesday sessions from April 2, 2026 to today
 function generateWednesdaySessions() {
@@ -77,12 +100,13 @@ function generateWednesdaySessions() {
     const topicsStr = selectedTopics.map(t => t.name).join(' & ');
     const guidanceStr = selectedTopics.map(t => `${t.name}: ${t.keyPoints} (${t.howTo})`).join(' | ');
 
-    const sessionWorkers = shuffleArr([...WORKERS], rng).slice(0, 5 + Math.floor(rng() * 3));
-    const fromHr = 9 + Math.floor(rng() * 2);
+    const sessionWorkers = shuffleArr([...WORKERS], rng).slice(0, 5 + Math.floor(rng() * (WORKERS.length - 5 + 1)));
+    // Unit 11: 17:00–18:00 (evening), Unit 12: 09:00–10:00 (morning)
+    const fromHr = activeUnit === 'Unit 12' ? 9 : 17;
     const toHr = fromHr + 1;
-    const trainerIdx = Math.floor(rng() * TRAINERS.length);
-    const langIdx = Math.floor(rng() * LANGUAGES.length);
-    const methodIdx = Math.floor(rng() * METHODS.length);
+    const trainerIdx = 0; // Always Bhavik Karani
+    const langIdx = 0;    // Always Hindi
+    const methodIdx = 0;  // Always Verbal
     const remarkIdx = Math.floor(rng() * REMARKS_LIST.length);
     const nextTraining = new Date(d);
     nextTraining.setDate(nextTraining.getDate() + 7);
@@ -183,6 +207,7 @@ async function init() {
   // Auto-select latest session
   if (allSessions.length > 0) openSession(allSessions[0].id);
   try { window.scrollTo({ top: 0, behavior: 'instant' }); } catch(e) {}
+  initUnitToggle();
 }
 
 function renderStats() {
