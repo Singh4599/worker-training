@@ -28,14 +28,14 @@ const TRAINING_TOPICS = [
 ];
 
 const WORKERS = [
-  { name: "Rajesh Sharma",       dept: "Packing & Sealing" },
+  { name: "BHIMLAL SHARMA",       dept: "Packing & Sealing" },
   { name: "Mukesh Vora",         dept: "Storage & Dispatch" },
   { name: "Vinod Singh",         dept: "Delivery & Loading" },
   { name: "Vishal Chaturvedi",   dept: "Quality Checking" },
-  { name: "Golu Yadav",          dept: "Repacking & Filling" },
+  { name: "SHIVSHANKAR YADAV",          dept: "Repacking & Filling" },
   { name: "Mahesh",              dept: "Packing & Sealing" },
   { name: "Rajkumar",            dept: "Storage & Dispatch" },
-  { name: "Pratap",              dept: "Delivery & Loading" },
+  { name: "SANVALDAS",              dept: "Delivery & Loading" },
   { name: "Suraj",               dept: "Repacking & Filling" },
   { name: "Suchitra",            dept: "Quality Checking" },
   { name: "Anil",                dept: "Packing & Sealing" }
@@ -286,7 +286,7 @@ function renderSessionDetail(s) {
   if (topicTitleEl) topicTitleEl.textContent = topicsText;
 
   const trainerEl = document.getElementById('det-trainer');
-  if (trainerEl) trainerEl.textContent = s.trainer || 'Rajesh Sharma (QA Manager)';
+  if (trainerEl) trainerEl.textContent = s.trainer || 'BHIMLAL SHARMA (QA Manager)';
 
   const timeEl = document.getElementById('det-time');
   if (timeEl) timeEl.textContent = `${s.fromTime} – ${s.toTime} (1 Hour)`;
