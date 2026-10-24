@@ -483,8 +483,8 @@ window.printSession = function() {
     <td><b>${esc(w.name)}</b></td>
     <td>${esc(w.dept)}</td>
     <td>${esc(s.displayDate)}</td>
-    <td>${esc(s.fromTime)} – ${esc(s.toTime)}</td>
-    <td><span style="background:#1e40af;color:#fff;padding:1pt 5pt;border-radius:3pt;font-size:6pt;font-weight:600;-webkit-print-color-adjust:exact;print-color-adjust:exact">${esc(w.topicsCovered||s.topic)}</span></td>
+    <td style="white-space:nowrap">${esc(s.fromTime)}–${esc(s.toTime)}</td>
+    <td>${esc(w.topicsCovered||s.topic)}</td>
     <td style="text-align:center;color:#16a34a;font-weight:700">✓</td>
     <td>${esc(w.remarks||'Present & Verified')}</td>
   </tr>`).join('');
