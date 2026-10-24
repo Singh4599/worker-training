@@ -473,7 +473,71 @@ window.exportAllExcel = function() {
 
 // ── PRINT ─────────────────────────────────────────────────────────────────
 window.printSession = function() {
-  window.print();
+  const s = allSessions.find(x => x.id === currentSessionId);
+  if (!s) { alert('No session selected.'); return; }
+  const workers = s.workers || [];
+  const rowH = Math.max(10, Math.floor(148 / (workers.length || 1)));
+  function esc(v){ return v ? String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : '—'; }
+  const rowsHtml = workers.map((w,i) => `<tr style="height:${rowH}mm;${i%2===1?'background:#f7f7f7':''}">
+    <td style="text-align:center">${w.srNo||i+1}</td>
+    <td><b>${esc(w.name)}</b></td>
+    <td>${esc(w.dept)}</td>
+    <td>${esc(s.displayDate)}</td>
+    <td>${esc(s.fromTime)} – ${esc(s.toTime)}</td>
+    <td><span style="background:#1e40af;color:#fff;padding:1pt 5pt;border-radius:3pt;font-size:6pt;font-weight:600;-webkit-print-color-adjust:exact;print-color-adjust:exact">${esc(w.topicsCovered||s.topic)}</span></td>
+    <td style="text-align:center;color:#16a34a;font-weight:700">✓</td>
+    <td>${esc(w.remarks||'Present & Verified')}</td>
+  </tr>`).join('');
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"/>
+<title>LV Spices — Staff Training Record</title>
+<style>
+  @page{size:A4 portrait;margin:8mm}
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{font-family:Arial,sans-serif;font-size:8pt;color:#000;background:#fff}
+  .hdr{border:2pt solid #000;padding:6pt 8pt;margin-bottom:6pt}
+  .hdr h1{font-size:13pt;font-weight:800;text-transform:uppercase}
+  .hdr p{font-size:7pt;color:#444;margin-top:2pt}
+  .meta{display:grid;grid-template-columns:1fr 1fr;gap:4pt;margin-top:6pt;font-size:7.5pt}
+  .meta-item{border:0.5pt solid #ccc;padding:3pt 5pt}
+  .meta-item b{color:#B91C1C}
+  table{width:100%;border-collapse:collapse;margin-top:8pt}
+  thead{display:table-header-group}
+  tr{page-break-inside:avoid}
+  th{background:#1a1a1a;color:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact;font-size:7pt;padding:5pt 4pt;border:0.75pt solid #000;text-align:left}
+  td{font-size:8pt;padding:4pt;border:0.5pt solid #bbb;vertical-align:middle}
+  .sig{margin-top:12pt;font-size:8pt;display:flex;justify-content:space-between}
+</style></head><body>
+<div class="hdr">
+  <h1>Staff Training Attendance Record — L V Spices</h1>
+  <p>FSSAI Schedule 4 GMP Compliance • Worker Training &amp; Competency Log</p>
+  <div class="meta">
+    <div class="meta-item">🎓 Trainer: <b>${esc(s.trainer)}</b></div>
+    <div class="meta-item">📅 Date: <b>${esc(s.displayDate)}</b></div>
+    <div class="meta-item">⏱ Time: <b>${esc(s.fromTime)} – ${esc(s.toTime)}</b></div>
+    <div class="meta-item">📚 Topic: <b>${esc(s.topic)}</b></div>
+    <div class="meta-item">🗣 Method: <b>${esc(s.method)} + ${esc(s.language)}</b></div>
+    <div class="meta-item">👷 Workers Trained: <b>${workers.length}</b></div>
+  </div>
+</div>
+<table>
+  <thead><tr>
+    <th style="width:5%">SR.</th><th style="width:18%">WORKER NAME</th>
+    <th style="width:16%">DEPARTMENT / WORK</th><th style="width:10%">DATE</th>
+    <th style="width:10%">TIMING</th><th style="width:22%">TOPIC(S) COVERED</th>
+    <th style="width:6%">SIGN.</th><th style="width:13%">REMARKS</th>
+  </tr></thead>
+  <tbody>${rowsHtml}</tbody>
+</table>
+<div class="sig">
+  <span><b>Trainer:</b> &nbsp; ${esc(s.trainer)}</span>
+  <span><b>Supervisor:</b> &nbsp; Mukesh Vora</span>
+  <span><b>Date:</b> ${esc(s.displayDate)}</span>
+</div>
+<script>window.onload=function(){window.print();setTimeout(function(){window.close();},800);};<\/script>
+</body></html>`;
+  const pw = window.open('','_blank','width=900,height=1200');
+  if(pw){pw.document.write(html);pw.document.close();}
+  else{alert('Allow popups to use Print.');}
 }
 
 // ── SIDEBAR ───────────────────────────────────────────────────────────────
