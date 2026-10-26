@@ -552,3 +552,137 @@ window.closeSidebar = function() {
 
 // ── START ─────────────────────────────────────────────────────────────────
 init();
+
+// ─── PRINT A4 RANGE MODAL ────────────────────────────────────────────────────
+let _printTab = 'single';
+
+function _todayStr() { return new Date().toISOString().split('T')[0]; }
+
+window.openPrintModal = function() {
+  const modal = document.getElementById('print-modal');
+  if (!modal) return;
+  modal.style.display = 'flex';
+  _printTab = 'single';
+  setPrintTab('single');
+  const today = _todayStr();
+  // Label current session
+  const s = allSessions.find(x => x.id === currentSessionId);
+  const lbl = document.getElementById('pm-single-date-label');
+  if (lbl) lbl.textContent = s ? `${s.displayDate} — ${s.topic}` : '—';
+  // Date inputs
+  const fromEl = document.getElementById('pm-from-date');
+  const toEl   = document.getElementById('pm-to-date');
+  if (fromEl) { fromEl.max = today; fromEl.value = today; }
+  if (toEl)   { toEl.max   = today; toEl.value   = today; }
+  _trainRangeInfo();
+};
+
+window.closePrintModal = function() {
+  const m = document.getElementById('print-modal');
+  if (m) m.style.display = 'none';
+};
+
+window.setPrintTab = function(tab) {
+  _printTab = tab;
+  ['single','range'].forEach(t => {
+    const btn   = document.getElementById(`pm-tab-${t}`);
+    const panel = document.getElementById(`pm-panel-${t}`);
+    const active = t === tab;
+    if (btn)   { btn.style.background = active ? '#1a1a2e' : '#fff'; btn.style.color = active ? '#fff' : '#555'; btn.style.borderColor = active ? '#1a1a2e' : '#e2e8f0'; }
+    if (panel) panel.style.display = active ? '' : 'none';
+  });
+};
+
+function _trainRangeInfo() {
+  const info = document.getElementById('pm-range-info');
+  const from = document.getElementById('pm-from-date');
+  const to   = document.getElementById('pm-to-date');
+  if (!info || !from || !to) return;
+  const today = _todayStr();
+  if (from.value > today) from.value = today;
+  if (to.value > today)   to.value   = today;
+  if (from.value && to.value && from.value <= to.value) {
+    const matched = allSessions.filter(s => s.date >= from.value && s.date <= to.value).length;
+    info.style.display = '';
+    info.style.color = '#374151';
+    info.textContent = matched > 0
+      ? `📄 ${matched} session${matched > 1 ? 's' : ''} found in this range — ${matched} page${matched > 1 ? 's' : ''} will be printed.`
+      : '⚠️ No sessions found in this date range.';
+  } else { info.style.display = 'none'; }
+}
+
+window.executePrint = function() {
+  const today = _todayStr();
+  if (_printTab === 'single') { closePrintModal(); printSession(); return; }
+  if (_printTab === 'range') {
+    const from = document.getElementById('pm-from-date');
+    const to   = document.getElementById('pm-to-date');
+    if (!from.value || !to.value) { alert('Please select both From and To dates.'); return; }
+    if (from.value > today) { alert('From date cannot be a future date.'); return; }
+    if (to.value > today)   { alert('To date cannot be a future date.'); return; }
+    if (from.value > to.value) { alert('From date must be before or equal To date.'); return; }
+    const sessions = allSessions.filter(s => s.date >= from.value && s.date <= to.value)
+      .sort((a,b) => a.date.localeCompare(b.date));
+    if (!sessions.length) { alert('No training sessions found in this date range.'); return; }
+    closePrintModal();
+    _printSessionRange(sessions);
+  }
+};
+
+function _printSessionRange(sessions) {
+  function esc(v){ return v ? String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : '—'; }
+  const pagesHtml = sessions.map((s, pageIdx) => {
+    const workers = s.workers || [];
+    const rowH = Math.max(10, Math.floor(148 / (workers.length || 1)));
+    const rowsHtml = workers.map((w,i) => `<tr style="height:${rowH}mm;${i%2===1?'background:#f7f7f7':''}">
+      <td style="text-align:center">${w.srNo||i+1}</td><td><b>${esc(w.name)}</b></td>
+      <td>${esc(w.dept)}</td><td>${esc(s.displayDate)}</td>
+      <td style="white-space:nowrap">${esc(s.fromTime)}–${esc(s.toTime)}</td>
+      <td>${esc(w.topicsCovered||s.topic)}</td>
+      <td style="text-align:center;color:#16a34a;font-weight:700">✓</td>
+      <td>${esc(w.remarks||'Present & Verified')}</td>
+    </tr>`).join('') || `<tr><td colspan="8" style="text-align:center;color:#888;padding:20pt">No attendance recorded for this session</td></tr>`;
+    return `<div style="page-break-after:${pageIdx<sessions.length-1?'always':'avoid'}">
+<div style="border:2pt solid #000;padding:6pt 8pt;margin-bottom:6pt">
+  <h1 style="font-size:13pt;font-weight:800;text-transform:uppercase">Staff Training Attendance Record — L V Spices</h1>
+  <p style="font-size:7pt;color:#444;margin-top:2pt">FSSAI Schedule 4 GMP Compliance • Worker Training &amp; Competency Log</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:4pt;margin-top:6pt;font-size:7.5pt">
+    <div style="border:0.5pt solid #ccc;padding:3pt 5pt">🎓 Trainer: <b style="color:#B91C1C">${esc(s.trainer)}</b></div>
+    <div style="border:0.5pt solid #ccc;padding:3pt 5pt">📅 Date: <b style="color:#B91C1C">${esc(s.displayDate)}</b></div>
+    <div style="border:0.5pt solid #ccc;padding:3pt 5pt">⏱ Time: <b>${esc(s.fromTime)} – ${esc(s.toTime)}</b></div>
+    <div style="border:0.5pt solid #ccc;padding:3pt 5pt">📚 Topic: <b>${esc(s.topic)}</b></div>
+  </div>
+</div>
+<table style="width:100%;border-collapse:collapse;font-size:8pt">
+  <thead style="display:table-header-group"><tr>
+    <th style="background:#1a1a1a;color:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact;font-size:7pt;padding:5pt 4pt;border:0.75pt solid #000;width:5%">SR.</th>
+    <th style="background:#1a1a1a;color:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact;font-size:7pt;padding:5pt 4pt;border:0.75pt solid #000;width:18%">WORKER NAME</th>
+    <th style="background:#1a1a1a;color:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact;font-size:7pt;padding:5pt 4pt;border:0.75pt solid #000;width:16%">DEPT / WORK</th>
+    <th style="background:#1a1a1a;color:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact;font-size:7pt;padding:5pt 4pt;border:0.75pt solid #000;width:10%">DATE</th>
+    <th style="background:#1a1a1a;color:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact;font-size:7pt;padding:5pt 4pt;border:0.75pt solid #000;width:10%">TIMING</th>
+    <th style="background:#1a1a1a;color:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact;font-size:7pt;padding:5pt 4pt;border:0.75pt solid #000;width:22%">TOPIC(S) COVERED</th>
+    <th style="background:#1a1a1a;color:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact;font-size:7pt;padding:5pt 4pt;border:0.75pt solid #000;width:6%">SIGN.</th>
+    <th style="background:#1a1a1a;color:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact;font-size:7pt;padding:5pt 4pt;border:0.75pt solid #000;width:13%">REMARKS</th>
+  </tr></thead>
+  <tbody>${rowsHtml}</tbody>
+</table></div>`;
+  }).join('');
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>LV Spices — Training Records</title>
+<style>@page{size:A4 portrait;margin:8mm}*{margin:0;padding:0;box-sizing:border-box}html,body{font-family:Arial,sans-serif;font-size:8pt;color:#000;background:#fff}td{padding:4pt;border:0.5pt solid #bbb;vertical-align:middle}</style>
+</head><body>${pagesHtml}<script>window.onload=function(){window.print();setTimeout(function(){window.close();},800);};<\/script></body></html>`;
+  const pw = window.open('','_blank','width=900,height=1200');
+  if(pw){pw.document.write(html);pw.document.close();}
+  else{alert('Allow popups to use Print.');}
+}
+
+function _initTrainPrintListeners() {
+  const from = document.getElementById('pm-from-date');
+  const to   = document.getElementById('pm-to-date');
+  if (from) { from.addEventListener('change', _trainRangeInfo); from.addEventListener('input', _trainRangeInfo); }
+  if (to)   { to.addEventListener('change', _trainRangeInfo);   to.addEventListener('input', _trainRangeInfo); }
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', _initTrainPrintListeners);
+} else {
+  _initTrainPrintListeners();
+}
